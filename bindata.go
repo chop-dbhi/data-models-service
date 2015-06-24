@@ -79,7 +79,7 @@ func assets_full_md() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/full.md", size: 1318, mode: os.FileMode(420), modTime: time.Unix(1434109029, 0)}
+	info := bindata_file_info{name: "assets/full.md", size: 1318, mode: os.FileMode(420), modTime: time.Unix(1435108313, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
@@ -99,7 +99,7 @@ func assets_index_md() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/index.md", size: 3545, mode: os.FileMode(420), modTime: time.Unix(1433416806, 0)}
+	info := bindata_file_info{name: "assets/index.md", size: 3545, mode: os.FileMode(420), modTime: time.Unix(1435066336, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
@@ -119,12 +119,12 @@ func assets_models_md() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/models.md", size: 112, mode: os.FileMode(420), modTime: time.Unix(1434109594, 0)}
+	info := bindata_file_info{name: "assets/models.md", size: 112, mode: os.FileMode(420), modTime: time.Unix(1435066336, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
 
-var _assets_repos_md = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x52\x56\x08\x4a\x2d\xc8\x2f\xce\x2c\xc9\x2f\xca\x4c\x2d\xe6\xe2\xaa\xae\x2e\x4a\xcc\x4b\x4f\x55\xd0\xab\xad\xd5\x55\xa8\xae\xd6\x0b\x0d\xf2\xa9\xad\xe5\x52\x00\x02\x5d\x05\x27\xa0\x54\x72\x86\x15\x48\x18\xc2\x84\xcb\x38\xe7\xe7\xe6\x66\x96\x80\x65\x20\xcc\x60\x0f\x47\x43\x34\x59\x05\x97\xc4\x92\x54\x24\x25\x21\x99\xb9\xa9\x70\x25\x6e\xa9\x25\xc9\x19\xa9\x29\x60\x69\x30\x1b\x2a\x5b\x5d\x9d\x9a\x97\x02\xa4\x01\x01\x00\x00\xff\xff\xc4\xad\x01\x96\xa7\x00\x00\x00")
+var _assets_repos_md = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x52\x56\x08\x4a\x2d\xc8\x2f\xce\x2c\xc9\x2f\xca\x4c\x2d\xe6\xe2\xaa\xae\x2e\x4a\xcc\x4b\x4f\x55\xd0\xab\xad\xd5\x55\xa8\xae\xd6\x0b\x0d\xf2\xa9\xad\xe5\x52\x00\x02\x5d\x05\x27\xa0\x54\x72\x86\x15\x48\x18\xc2\x84\xcb\x38\xe7\xe7\xe6\x66\x96\x80\x65\x20\xcc\x60\x0f\x47\x43\x34\x59\x05\x97\xc4\x92\x54\x24\x25\x21\x99\xb9\xa9\x7a\x3e\xf9\xc9\x89\x39\x70\x85\x6e\xa9\x25\xc9\x19\xa9\x29\x60\x45\x60\x36\x8a\x9a\xea\xea\xd4\xbc\x14\x20\x0d\x08\x00\x00\xff\xff\x04\x14\x1d\xe3\xb3\x00\x00\x00")
 
 func assets_repos_md_bytes() ([]byte, error) {
 	return bindata_read(
@@ -139,7 +139,7 @@ func assets_repos_md() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/repos.md", size: 167, mode: os.FileMode(420), modTime: time.Unix(1433090233, 0)}
+	info := bindata_file_info{name: "assets/repos.md", size: 179, mode: os.FileMode(420), modTime: time.Unix(1435108326, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
@@ -159,7 +159,7 @@ func assets_style_css() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/style.css", size: 11487, mode: os.FileMode(420), modTime: time.Unix(1434109904, 0)}
+	info := bindata_file_info{name: "assets/style.css", size: 11487, mode: os.FileMode(420), modTime: time.Unix(1435066336, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
@@ -179,7 +179,7 @@ func assets_wrap_html() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/wrap.html", size: 2301, mode: os.FileMode(420), modTime: time.Unix(1433862633, 0)}
+	info := bindata_file_info{name: "assets/wrap.html", size: 2301, mode: os.FileMode(420), modTime: time.Unix(1435066336, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
