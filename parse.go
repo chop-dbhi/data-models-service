@@ -288,6 +288,9 @@ func parseFiles(model *Model) {
 				case "primary key":
 					schema.AddPrimaryKey(r)
 
+				case "unique":
+					schema.AddUnique(r)
+
 				case "not null":
 					schema.AddNotNullable(r)
 				}
