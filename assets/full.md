@@ -2,7 +2,8 @@
 
 {{if .Description}}{{.Description}}{{end}}
 
-- ID: {{.Name}}/{{.Version}}
+- Version: {{.Version}}{{if .ReleaseLevel}}
+- Release: {{.ReleaseLevel}}+{{.ReleaseSerial}}{{end}}
 - URL: {{.URL}}
 
 ## Tables

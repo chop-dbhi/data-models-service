@@ -467,6 +467,9 @@ func findModels(root string) []*Model {
 			m.Label = attrs["label"]
 			m.Description = attrs["description"]
 			m.URL = attrs["url"]
+			m.ReleaseLevel = attrs["release_level"]
+			m.ReleaseSerial = attrs["release_serial"]
+
 			m.path = filepath.Dir(path)
 
 			models = append(models, &m)

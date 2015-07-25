@@ -251,12 +251,14 @@ func (fi FieldIndex) MarshalJSON() ([]byte, error) {
 }
 
 type Model struct {
-	Label       string
-	Name        string
-	Version     string
-	Description string
-	URL         string
-	Tables      TableIndex
+	Label         string
+	Name          string
+	Version       string
+	Description   string
+	URL           string
+	ReleaseLevel  string
+	ReleaseSerial string
+	Tables        TableIndex
 
 	schema *Schema
 
@@ -269,7 +271,15 @@ func (m *Model) MarshalJSON() ([]byte, error) {
 		"version":     m.Version,
 		"description": m.Description,
 		"url":         m.URL,
+		"release":     nil,
 		"tables":      m.Tables,
+	}
+
+	if m.ReleaseLevel != "" {
+		aux["release"] = map[string]string{
+			"level":  m.ReleaseLevel,
+			"serial": m.ReleaseSerial,
+		}
 	}
 
 	return json.Marshal(aux)
