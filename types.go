@@ -31,7 +31,7 @@ var fileTypeStrings = map[FileType]string{
 
 // Mapping of file types to their minimum required fields.
 var FileTypeFields = map[FileType][]string{
-	FieldsFile: []string{
+	FieldsFile: {
 		"model",
 		"version",
 		"table",
@@ -39,14 +39,14 @@ var FileTypeFields = map[FileType][]string{
 		"description",
 	},
 
-	TablesFile: []string{
+	TablesFile: {
 		"model",
 		"version",
 		"table",
 		"description",
 	},
 
-	SchemataFile: []string{
+	SchemataFile: {
 		"model",
 		"version",
 		"table",
@@ -58,7 +58,7 @@ var FileTypeFields = map[FileType][]string{
 		"default",
 	},
 
-	ConstraintsFile: []string{
+	ConstraintsFile: {
 		"model",
 		"version",
 		"table",
@@ -67,7 +67,7 @@ var FileTypeFields = map[FileType][]string{
 		"name",
 	},
 
-	IndexesFile: []string{
+	IndexesFile: {
 		"model",
 		"version",
 		"table",
@@ -76,7 +76,7 @@ var FileTypeFields = map[FileType][]string{
 		"order",
 	},
 
-	ReferencesFile: []string{
+	ReferencesFile: {
 		"version",
 		"table",
 		"field",
@@ -85,7 +85,7 @@ var FileTypeFields = map[FileType][]string{
 		"name",
 	},
 
-	MappingsFile: []string{
+	MappingsFile: {
 		"source_model",
 		"source_version",
 		"source_table",
@@ -97,7 +97,7 @@ var FileTypeFields = map[FileType][]string{
 		"comment",
 	},
 
-	ModelsFile: []string{
+	ModelsFile: {
 		"model",
 		"version",
 		"label",
