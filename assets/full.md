@@ -2,26 +2,26 @@
 
 {{if .Description}}{{.Description}}{{end}}
 
-- Version: {{.Version}}{{if .ReleaseLevel}}
-- Release: {{.ReleaseLevel}}+{{.ReleaseSerial}}{{end}}
+- Version: {{.Version}}{{if .Release.Level}}
+- Release: {{.Release.Level}}+{{.Release.Serial}}{{end}}
 - URL: {{.URL}}
 
 ## Tables
 
-{{range .Tables.List}}- [{{.}}](#{{.Slug}})
+{{range .Tables.List}}- [{{.}}](#{{.URLSlug}})
 {{end}}
 
-{{range .Tables.List}}## {{.}} {#{{.Slug}}}
+{{range .Tables.List}}## {{.}} {#{{.URLSlug}}}
 
 {{.Description}}
 
 **Fields**
 
-{{range .Fields.List}}- [{{.}}](#{{.Slug}})
+{{range .Fields.List}}- [{{.}}](#{{.URLSlug}})
 {{end}}
-{{range .Fields.List}}#### {{.}} {#{{.Slug}}}
+{{range .Fields.List}}#### {{.}} {#{{.URLSlug}}}
 
-{{if .References}}*Refers to: [{{.References.Field.Table}}](#{{.References.Field.Table.Slug}}) / [{{.References.Field}}](#{{.References.Field.Slug}})*{{end}}
+{{if .References}}*Refers to: [{{.References.Field.Table}}](#{{.References.Field.Table.URLSlug}}) / [{{.References.Field}}](#{{.References.Field.URLSlug}})*{{end}}
 
 {{.Description}}
 
@@ -37,7 +37,7 @@
 
 Model | Table | Field | Comment
 ------|-------|-------|--------
-{{range .Mappings}}[{{.Field.Table.Model}}](/models/{{.Field.Table.Model.Path}}) | [{{.Field.Table}}](/models/{{.Field.Table.Model.Path}}#{{.Field.Table.Slug}}) | [{{.Field}}](/models/{{.Field.Table.Model.Path}}#{{.Field.Slug}}) | {{.Comment}}
+{{range .Mappings}}[{{.Field.Table.Model}}](/models/{{.Field.Table.Model.URLPath}}) | [{{.Field.Table}}](/models/{{.Field.Table.Model.URLPath}}#{{.Field.Table.URLSlug}}) | [{{.Field}}](/models/{{.Field.Table.Model.URLPath}}#{{.Field.URLSlug}}) | {{.Comment}}
 {{end}}
 {{end}}
 
@@ -47,7 +47,7 @@ Model | Table | Field | Comment
 
 Table | Field | Name
 ------|-------|-----
-{{range .InboundRefs}}[{{.Field.Table}}](#{{.Field.Table.Slug}}) | [{{.Field}}](#{{.Field.Slug}}) | {{.}}
+{{range .InboundRefs}}[{{.Field.Table}}](#{{.Field.Table.URLSlug}}) | [{{.Field}}](#{{.Field.URLSlug}}) | {{.}}
 {{end}}
 {{end}}
 

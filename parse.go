@@ -4,16 +4,43 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	dms "github.com/chop-dbhi/data-models-service/client"
 	"github.com/sirupsen/logrus"
 )
 
 const modelFileName = "models.csv"
 
-var dataModelCache ModelIndex
+// TableFieldIndex is an index by table, then field name to attributes.
+type TableFieldIndex map[string]map[string]dms.Attrs
+
+func (i TableFieldIndex) Add(t, f string, a dms.Attrs) {
+	t = strings.ToLower(t)
+	f = strings.ToLower(f)
+
+	if _, ok := i[t]; !ok {
+		i[t] = make(map[string]dms.Attrs)
+	}
+
+	i[t][f] = a
+}
+
+func (i TableFieldIndex) Get(t, f string) dms.Attrs {
+	t = strings.ToLower(t)
+	f = strings.ToLower(f)
+
+	if _, ok := i[t]; !ok {
+		return nil
+	}
+
+	return i[t][f]
+}
+
+var dataModelCache *dms.Models
 
 var newlinesRe = regexp.MustCompile(`[\s]+`)
 
@@ -27,8 +54,8 @@ func rebuildCache() {
 	wg := sync.WaitGroup{}
 	wg.Add(len(registeredRepos))
 
-	cache := make(ModelIndex)
-	models := make(chan *Model)
+	cache := new(dms.Models)
+	models := make(chan *dms.Model)
 
 	// Find models across repos.
 	for _, r := range registeredRepos {
@@ -45,7 +72,7 @@ func rebuildCache() {
 	// Spawn 5 workers.
 	for i := 0; i < 5; i++ {
 		go func() {
-			var m *Model
+			var m *dms.Model
 
 			for {
 				select {
@@ -77,7 +104,7 @@ func rebuildCache() {
 	dataModelCache = cache
 }
 
-func parseMappings(models ModelIndex, path string) {
+func parseMappings(models *dms.Models, path string) {
 	// Load all the definitions files.
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		// Ignore errors.
@@ -119,10 +146,10 @@ func parseMappings(models ModelIndex, path string) {
 		}
 
 		var (
-			mp     *Mapping
-			sm, tm *Model
-			st, tt *Table
-			sf, tf *Field
+			mp     *dms.Mapping
+			sm, tm *dms.Model
+			st, tt *dms.Table
+			sf, tf *dms.Field
 		)
 
 		for lineno, r := range records {
@@ -166,14 +193,14 @@ func parseMappings(models ModelIndex, path string) {
 			}
 
 			// Bi-directional mapping.
-			mp = &Mapping{
+			mp = &dms.Mapping{
 				Field:   sf,
 				Comment: r["comment"],
 			}
 
 			tf.Mappings = append(tf.Mappings, mp)
 
-			mp = &Mapping{
+			mp = &dms.Mapping{
 				Field:   tf,
 				Comment: r["comment"],
 			}
@@ -186,27 +213,27 @@ func parseMappings(models ModelIndex, path string) {
 }
 
 // parseFiles finds and parses all definitions files in the passed directory.
-func parseFiles(model *Model) {
+func parseFiles(model *dms.Model) {
 	var (
 		ok        bool
 		table     string
-		tableList []Attrs
-		refs      []*Reference
+		tableList []dms.Attrs
+		refs      []*dms.Reference
 	)
 
 	// Initialize
-	schema := &Schema{
-		ForeignKeys:  make([]*ForeignKey, 0),
-		NotNullables: make([]*NotNullable, 0),
+	schema := &dms.Schema{
+		ForeignKeys:  make([]*dms.ForeignKey, 0),
+		NotNullables: make([]*dms.NotNullable, 0),
 	}
 
-	model.schema = schema
+	model.Schema = schema
 
-	tableFields := make(map[string][]Attrs)
+	tableFields := make(map[string][]dms.Attrs)
 	fieldSchemata := make(TableFieldIndex)
 
 	// Load all the definitions files.
-	filepath.Walk(model.path, func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(model.Path, func(path string, info os.FileInfo, err error) error {
 		// Ignore errors.
 		if err != nil {
 			return nil
@@ -254,13 +281,13 @@ func parseFiles(model *Model) {
 
 		case FieldsFile:
 			logrus.Debugf("parse (%s): adding fields file", path)
-			var tableRecords []Attrs
+			var tableRecords []dms.Attrs
 
 			for _, record := range records {
 				table = record["table"]
 
 				if tableRecords, ok = tableFields[table]; !ok {
-					tableRecords = make([]Attrs, 0)
+					tableRecords = make([]dms.Attrs, 0)
 				}
 
 				tableRecords = append(tableRecords, record)
@@ -274,9 +301,9 @@ func parseFiles(model *Model) {
 
 		case ReferencesFile:
 			for _, r := range records {
-				refs = append(refs, &Reference{
+				refs = append(refs, &dms.Reference{
 					Name:  r["name"],
-					attrs: r,
+					Attrs: r,
 				})
 
 				schema.AddForeignKey(r)
@@ -306,27 +333,27 @@ func parseFiles(model *Model) {
 	})
 
 	var (
-		attrs     Attrs
-		t         *Table
-		f         *Field
-		fieldList []Attrs
-		fields    FieldIndex
+		attrs     dms.Attrs
+		t         *dms.Table
+		f         *dms.Field
+		fields    *dms.Fields
+		fieldList []dms.Attrs
 	)
 
 	// Combine and link.
-	model.Tables = make(TableIndex)
+	model.Tables = new(dms.Tables)
 
 	// Fields that has references to other fields.
 	for _, attrs = range tableList {
-		fields = make(FieldIndex)
+		fields = new(dms.Fields)
 
-		t = &Table{
+		t = &dms.Table{
 			Name:        attrs["table"],
 			Description: stripNewlines(attrs["description"]),
 			Label:       attrs["label"],
 			Fields:      fields,
 			Model:       model,
-			attrs:       attrs,
+			Attrs:       attrs,
 		}
 
 		model.Tables.Add(t)
@@ -347,21 +374,43 @@ func parseFiles(model *Model) {
 				req = false
 			}
 
-			f = &Field{
+			f = &dms.Field{
 				Name:        attrs["field"],
 				Description: stripNewlines(attrs["description"]),
 				Label:       attrs["label"],
 				Required:    req,
 				Table:       t,
-				attrs:       attrs,
+				Attrs:       attrs,
 			}
 
 			// Add schema information.
 			if sattrs := fieldSchemata.Get(t.Name, f.Name); sattrs != nil {
 				f.Type = sattrs["type"]
-				f.Length = sattrs["length"]
-				f.Precision = sattrs["precision"]
-				f.Scale = sattrs["scale"]
+
+				if sattrs["length"] != "" {
+					if l, err := strconv.Atoi(sattrs["length"]); err != nil {
+						logrus.Error("invalid length %s", sattrs["length"])
+					} else {
+						f.Length = l
+					}
+				}
+
+				if sattrs["precision"] != "" {
+					if l, err := strconv.Atoi(sattrs["precision"]); err != nil {
+						logrus.Error("invalid precision %s", sattrs["precision"])
+					} else {
+						f.Precision = l
+					}
+				}
+
+				if sattrs["scale"] != "" {
+					if l, err := strconv.Atoi(sattrs["scale"]); err != nil {
+						logrus.Error("invalid scale %s", sattrs["scale"])
+					} else {
+						f.Scale = l
+					}
+				}
+
 				f.Default = sattrs["default"]
 			}
 
@@ -370,37 +419,37 @@ func parseFiles(model *Model) {
 	}
 
 	var (
-		rt *Table
-		rf *Field
+		rt *dms.Table
+		rf *dms.Field
 	)
 
 	// Add references.
 	for _, ref := range refs {
-		t = model.Tables.Get(ref.attrs["table"])
+		t = model.Tables.Get(ref.Attrs["table"])
 
 		if t == nil {
-			logrus.Warnf("refs (%s): no source table `%s`", model.path, ref.attrs["table"])
+			logrus.Warnf("refs (%s): no source table `%s`", model.Path, ref.Attrs["table"])
 			continue
 		}
 
-		f = t.Fields.Get(ref.attrs["field"])
+		f = t.Fields.Get(ref.Attrs["field"])
 
 		if f == nil {
-			logrus.Warnf("refs (%s:%s): no source field `%s`", model.path, t.Name, ref.attrs["field"])
+			logrus.Warnf("refs (%s:%s): no source field `%s`", model.Path, t.Name, ref.Attrs["field"])
 			continue
 		}
 
-		rt = model.Tables.Get(ref.attrs["ref_table"])
+		rt = model.Tables.Get(ref.Attrs["ref_table"])
 
 		if rt == nil {
-			logrus.Warnf("refs (%s): could not reference table `%s` by %s", model.path, ref.attrs["ref_table"], f)
+			logrus.Warnf("refs (%s): could not reference table `%s` by %s", model.Path, ref.Attrs["ref_table"], f)
 			continue
 		}
 
-		rf = rt.Fields.Get(ref.attrs["ref_field"])
+		rf = rt.Fields.Get(ref.Attrs["ref_field"])
 
 		if rf == nil {
-			logrus.Warnf("refs (%s): could not reference field `%s` by %s", model.path, ref.attrs["ref_field"], f)
+			logrus.Warnf("refs (%s): could not reference field `%s` by %s", model.Path, ref.Attrs["ref_field"], f)
 			continue
 		}
 
@@ -410,7 +459,7 @@ func parseFiles(model *Model) {
 		f.References = ref
 
 		// Add back references.
-		rf.InboundRefs = append(rf.InboundRefs, &Reference{
+		rf.InboundRefs = append(rf.InboundRefs, &dms.Reference{
 			Name:  ref.Name,
 			Field: f,
 		})
@@ -419,8 +468,8 @@ func parseFiles(model *Model) {
 
 // findModels walks a path and looks for models.csv files which declare a
 // data model. Files in the directory will be walked to find definition files.
-func findModels(root string) []*Model {
-	var models []*Model
+func findModels(root string) []*dms.Model {
+	var models []*dms.Model
 
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		// Ignore errors.
@@ -459,7 +508,7 @@ func findModels(root string) []*Model {
 				return nil
 			}
 
-			m := Model{}
+			m := dms.Model{}
 
 			// Set the path of where the model was found.
 			m.Name = attrs["model"]
@@ -467,10 +516,12 @@ func findModels(root string) []*Model {
 			m.Label = attrs["label"]
 			m.Description = attrs["description"]
 			m.URL = attrs["url"]
-			m.ReleaseLevel = attrs["release_level"]
-			m.ReleaseSerial = attrs["release_serial"]
+			m.Release = &dms.Release{
+				Level:  attrs["release_level"],
+				Serial: attrs["release_serial"],
+			}
 
-			m.path = filepath.Dir(path)
+			m.Path = filepath.Dir(path)
 
 			models = append(models, &m)
 		}
