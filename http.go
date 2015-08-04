@@ -83,6 +83,10 @@ func httpIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	switch detectFormat(w, r) {
 	case "html":
 		RenderIndexHTML(w)
+	case "json":
+		jsonResponse(w, map[string]interface{}{
+			"name": "Data Models Service",
+		})
 	default:
 		w.WriteHeader(http.StatusNotFound)
 	}
