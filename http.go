@@ -29,7 +29,7 @@ var (
 		"json":     "json",
 	}
 
-	userAgent = fmt.Sprintf("DataModelsService/%s (+https://github.com/chop-dbhi/data-models-service)", progVersion)
+	userAgent = "DataModelsService/%s (+https://github.com/chop-dbhi/data-models-service)"
 )
 
 func jsonResponse(w http.ResponseWriter, d interface{}) error {
@@ -76,7 +76,7 @@ func detectFormat(w http.ResponseWriter, r *http.Request) string {
 		contentType = "application/json"
 	}
 
-	w.Header().Set("user-agent", userAgent)
+	w.Header().Set("user-agent", fmt.Sprintf(userAgent, progVersion))
 	w.Header().Set("content-type", contentType)
 
 	return format
@@ -90,7 +90,6 @@ func httpIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		jsonResponse(w, map[string]interface{}{
 			"name":    serviceName,
 			"version": progVersion,
-			"date":    progDate.Local(),
 		})
 	default:
 		w.WriteHeader(http.StatusNotFound)

@@ -1,5 +1,4 @@
 GIT_SHA := $(shell git log -1 --pretty=format:"%h")
-GIT_TS := $(shell git log -1 --pretty=format:"%ct")
 
 all: install
 
@@ -33,7 +32,7 @@ build-dev-assets:
 
 _build:
 	go build \
-		-ldflags "-X main.progBuild '$(GIT_SHA)' -X main.progTimestamp '$(GIT_TS)'" \
+		-ldflags "-X main.progBuild '$(GIT_SHA)'" \
 		-o $(GOPATH)/bin/data-models .
 
 build: build-assets _build

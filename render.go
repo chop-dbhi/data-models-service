@@ -74,7 +74,9 @@ func RenderReposMarkdown(w io.Writer, v interface{}) {
 
 func RenderIndexHTML(w io.Writer) {
 	b := bytes.Buffer{}
-	renderMarkdown(&b, "assets/index.md", nil)
+	renderMarkdown(&b, "assets/index.md", map[string]interface{}{
+		"Version": progVersion,
+	})
 	renderHTML(w, b.Bytes())
 }
 
