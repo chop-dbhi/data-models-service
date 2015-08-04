@@ -1,5 +1,7 @@
 # Data Models Service
 
+Version: {{.Version}}
+
 ### Top-level Resources
 
 - Model Specifications - [/models](/models) - A specification of each data model version is available at a `/models/<data model>/<version>` endpoint (e.g., [/models/omop/v5](http://data-models.origins.link/models/omop/v5)). 

@@ -1,3 +1,6 @@
+GIT_SHA := $(shell git log -1 --pretty=format:"%h")
+GIT_TS := $(shell git log -1 --pretty=format:"%ct")
+
 all: install
 
 clean:
@@ -11,6 +14,7 @@ install:
 	go get github.com/sirupsen/logrus
 	go get github.com/russross/blackfriday
 	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/blang/semver
 
 test-install: install
 	go get golang.org/x/tools/cmd/cover
@@ -21,13 +25,20 @@ dev-install: install test-install
 test:
 	go test -cover ./...
 
-build:
+build-assets:
 	go-bindata -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
-	go build -o $(GOPATH)/bin/data-models .
 
-build-dev:
+build-dev-assets:
 	go-bindata -debug -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
-	go build -o $(GOPATH)/bin/data-models .
+
+_build:
+	go build \
+		-ldflags "-X main.progBuild '$(GIT_SHA)' -X main.progTimestamp '$(GIT_TS)'" \
+		-o $(GOPATH)/bin/data-models .
+
+build: build-assets _build
+
+build-dev: build-dev-assets _build
 
 bench:
 	go test -run=none -bench=. ./... | prettybench
