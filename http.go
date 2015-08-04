@@ -85,7 +85,7 @@ func httpIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		RenderIndexHTML(w)
 	case "json":
 		jsonResponse(w, map[string]interface{}{
-			"name": "Data Models Service",
+			"name":    serviceName,
 		})
 	default:
 		w.WriteHeader(http.StatusNotFound)

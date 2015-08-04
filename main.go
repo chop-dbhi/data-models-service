@@ -18,6 +18,7 @@ var (
 	reposDir        string
 	secret          string
 	googleAnalytics string
+	serviceName     string
 )
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 	flag.StringVar(&secret, "secret", "", "Secret for webhook integration.")
 	flag.StringVar(&googleAnalytics, "ga", "", "Google Analytics tracking code.")
 	flag.Var(&registeredRepos, "repo", "Git repository to include. Multiple values can be supplied.")
+	flag.StringVar(&serviceName, "name", "Data Models Service", "Name of the service.")
 
 	flag.Parse()
 
