@@ -5,6 +5,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/chop-dbhi/data-models-service/client"
 	"github.com/russross/blackfriday"
 )
 
@@ -64,7 +65,7 @@ func RenderModelVersionMarkdown(w io.Writer, v interface{}) {
 	renderMarkdown(w, "assets/full.md", v)
 }
 
-func RenderModelCompareMarkdown(w io.Writer, m1 *Model, m2 *Model) {
+func RenderModelCompareMarkdown(w io.Writer, m1 *client.Model, m2 *client.Model) {
 	DiffModels(w, m1, m2)
 }
 
@@ -98,7 +99,7 @@ func RenderModelVersionHTML(w io.Writer, v interface{}) {
 	renderHTML(w, b.Bytes())
 }
 
-func RenderModelCompareHTML(w io.Writer, m1 *Model, m2 *Model) {
+func RenderModelCompareHTML(w io.Writer, m1 *client.Model, m2 *client.Model) {
 	b := bytes.Buffer{}
 	DiffModels(&b, m1, m2)
 	renderHTML(w, b.Bytes())

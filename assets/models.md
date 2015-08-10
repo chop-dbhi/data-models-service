@@ -1,4 +1,4 @@
 # {{.Title}}
 
-{{range .Items}}- [{{.}}](/models/{{.Path}}){{if .Description}} - {{.Description}}{{end}}
+{{range .Items}}- [{{.}}](/models/{{.URLPath}}){{if .Description}} - {{.Description}}{{end}}
 {{end}}

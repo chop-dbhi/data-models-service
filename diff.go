@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	dms "github.com/chop-dbhi/data-models-service/client"
 )
 
 const (
@@ -19,7 +21,7 @@ const (
 	Fall  = Fdiff | Fmatches
 )
 
-func diffKeys(attrs Attrs) []string {
+func diffKeys(attrs dms.Attrs) []string {
 	keys := make([]string, 0)
 
 	for k, _ := range attrs {
@@ -196,7 +198,7 @@ func normalize(s string) string {
 }
 
 // DiffAttrs compare a pair of attributes.
-func DiffAttrs(adoc, bdoc Attrs) *Diff {
+func DiffAttrs(adoc, bdoc dms.Attrs) *Diff {
 	var (
 		ad, bd bool
 		ai, bi int
@@ -272,7 +274,7 @@ func DiffAttrs(adoc, bdoc Attrs) *Diff {
 	}
 }
 
-func DiffModels(out io.Writer, a, b *Model) {
+func DiffModels(out io.Writer, a, b *dms.Model) {
 	buff := bytes.NewBuffer(nil)
 
 	fieldStats := Stats{}
@@ -290,18 +292,18 @@ func DiffModels(out io.Writer, a, b *Model) {
 
 	// Fields of new tables.
 	for _, k := range tableDiff.Added {
-		fieldStats.Added += len(btables.Get(k).attrs)
+		fieldStats.Added += len(btables.Get(k).Attrs)
 	}
 
 	// Fields of removed tables.
 	for _, k := range tableDiff.Removed {
-		fieldStats.Removed += len(atables.Get(k).attrs)
+		fieldStats.Removed += len(atables.Get(k).Attrs)
 	}
 
 	// Matches are recursed
 	var (
-		afields, bfields FieldIndex
-		adoc, bdoc       Attrs
+		afields, bfields *dms.Fields
+		adoc, bdoc       dms.Attrs
 	)
 
 	fmt.Fprintln(buff, "\n# Fields\n")
@@ -331,8 +333,8 @@ func DiffModels(out io.Writer, a, b *Model) {
 		// Diff the matched fields.
 		if len(diff.Matches) > 0 {
 			for _, f := range diff.Matches {
-				adoc = afields.Get(f).attrs
-				bdoc = bfields.Get(f).attrs
+				adoc = afields.Get(f).Attrs
+				bdoc = bfields.Get(f).Attrs
 
 				diff = DiffAttrs(adoc, bdoc)
 

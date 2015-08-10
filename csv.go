@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"io"
 	"strings"
+
+	dms "github.com/chop-dbhi/data-models-service/client"
 )
 
 type MapCSVReader struct {
@@ -12,8 +14,8 @@ type MapCSVReader struct {
 	csv *csv.Reader
 }
 
-func (r *MapCSVReader) zip(keys, values []string) Attrs {
-	m := make(Attrs, len(keys))
+func (r *MapCSVReader) zip(keys, values []string) dms.Attrs {
+	m := make(dms.Attrs, len(keys))
 
 	for i, k := range keys {
 		m[strings.TrimSpace(k)] = strings.TrimSpace(values[i])
@@ -36,7 +38,7 @@ func (r *MapCSVReader) Fields() []string {
 	return r.fields
 }
 
-func (r *MapCSVReader) Read() (Attrs, error) {
+func (r *MapCSVReader) Read() (dms.Attrs, error) {
 	// First iteration.
 	if r.fields == nil {
 		r.Fields()
@@ -53,8 +55,8 @@ func (r *MapCSVReader) Read() (Attrs, error) {
 	return m, err
 }
 
-func (r *MapCSVReader) ReadAll() ([]Attrs, error) {
-	records := make([]Attrs, 0)
+func (r *MapCSVReader) ReadAll() ([]dms.Attrs, error) {
+	records := make([]dms.Attrs, 0)
 
 	for {
 		record, err := r.Read()

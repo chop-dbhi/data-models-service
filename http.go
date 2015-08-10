@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 
+	dms "github.com/chop-dbhi/data-models-service/client"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -172,8 +173,8 @@ func httpTable(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	tn := p.ByName("table")
 
 	var (
-		m *Model
-		t *Table
+		m *dms.Model
+		t *dms.Table
 	)
 
 	if m = dataModelCache.Get(n, v); m == nil {
@@ -201,9 +202,9 @@ func httpField(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	fn := p.ByName("field")
 
 	var (
-		m *Model
-		t *Table
-		f *Field
+		m *dms.Model
+		t *dms.Table
+		f *dms.Field
 	)
 
 	if m = dataModelCache.Get(n, v); m == nil {
@@ -295,7 +296,7 @@ func httpModelSchema(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	v := p.ByName("version")
 
 	var (
-		m   *Model
+		m   *dms.Model
 		err error
 	)
 
@@ -309,7 +310,7 @@ func httpModelSchema(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	aux["model"] = m.Name
 	aux["version"] = m.Version
 	aux["tables"] = m.Tables
-	aux["schema"] = m.schema
+	aux["schema"] = m.Schema
 
 	switch detectFormat(w, r) {
 	case "json":
