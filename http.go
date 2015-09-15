@@ -70,11 +70,11 @@ func detectFormat(w http.ResponseWriter, r *http.Request) string {
 
 	switch format {
 	case "html":
-		contentType = "text/html"
+		contentType = "text/html; charset=utf-8"
 	case "markdown":
-		contentType = "text/markdown"
+		contentType = "text/markdown; charset=utf-8"
 	case "json":
-		contentType = "application/json"
+		contentType = "application/json; charset=utf-8"
 	}
 
 	w.Header().Set("user-agent", fmt.Sprintf(userAgent, progVersion))
