@@ -32,7 +32,7 @@ build-dev-assets:
 
 _build:
 	go build \
-		-ldflags "-X main.progBuild '$(GIT_SHA)'" \
+		-ldflags "-X main.progBuild=$(GIT_SHA)" \
 		-o $(GOPATH)/bin/data-models .
 
 build: build-assets _build
