@@ -40,7 +40,8 @@ func (i TableFieldIndex) Get(t, f string) dms.Attrs {
 	return i[t][f]
 }
 
-var dataModelCache *dms.Models
+// Initialize empty model cache.
+var dataModelCache = &dms.Models{}
 
 var newlinesRe = regexp.MustCompile(`[\s]+`)
 
