@@ -14,6 +14,7 @@ install:
 	go get github.com/russross/blackfriday
 	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/blang/semver
+	go get github.com/rs/cors
 
 test-install: install
 	go get golang.org/x/tools/cmd/cover

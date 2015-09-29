@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -76,6 +77,9 @@ func main() {
 	// Endpoint for webhook integration.
 	router.POST("/_hook", httpUpdateRepos)
 
+	// Add CORS support
+	handler := cors.Default().Handler(router)
+
 	// Update the repo on startup.
 	go updateRepos()
 
@@ -88,5 +92,5 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", host, port)
 
 	logrus.Printf("Listening on %s...", addr)
-	logrus.Fatal(http.ListenAndServe(addr, router))
+	logrus.Fatal(http.ListenAndServe(addr, handler))
 }
