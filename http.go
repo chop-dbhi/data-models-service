@@ -336,3 +336,27 @@ func httpReposList(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
 		w.WriteHeader(http.StatusNotAcceptable)
 	}
 }
+
+type ReverseProxied struct {
+    handler http.Handler
+}
+
+func (rp ReverseProxied) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    r.URL.Path = strings.TrimSuffix(r.URL.Path, "/")
+
+    if len(r.Header["X-Script-Name"]) < 0 {
+        scriptName := r.Header["X-Script-Name"][0]
+        if scriptName != "" {
+            r.URL.Path = strings.TrimPrefix(r.URL.Path, scriptName)
+        }
+    }
+
+    if len(r.Header["X-Forwarded-Scheme"]) < 0 {
+        scheme := r.Header["X-Forwarded-Scheme"][0]
+        if scheme != "" {
+            r.URL.Scheme = scheme
+        }
+    }
+
+    rp.handler.ServeHTTP(w, r)
+}

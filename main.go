@@ -60,8 +60,8 @@ func main() {
 	// Setup routes.
 	router := httprouter.New()
 
-	router.RedirectTrailingSlash = true
-	router.RedirectFixedPath = true
+	router.RedirectTrailingSlash = false
+	router.RedirectFixedPath = false
 	router.HandleMethodNotAllowed = true
 
 	router.GET("/", httpIndex)
@@ -80,6 +80,9 @@ func main() {
 	// Add CORS support
 	handler := cors.Default().Handler(router)
 
+	// Add reverse proxy support middleware
+	rp := &ReverseProxied{handler: handler}
+
 	// Update the repo on startup.
 	go updateRepos()
 
@@ -92,5 +95,5 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", host, port)
 
 	logrus.Printf("Listening on %s...", addr)
-	logrus.Fatal(http.ListenAndServe(addr, handler))
+	logrus.Fatal(http.ListenAndServe(addr, rp))
 }
