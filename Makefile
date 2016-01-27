@@ -2,12 +2,6 @@ GIT_SHA := $(shell git log -1 --pretty=format:"%h")
 
 all: install
 
-clean:
-	go clean ./...
-
-doc:
-	godoc -http=:6060
-
 install:
 	go get github.com/julienschmidt/httprouter
 	go get github.com/sirupsen/logrus
@@ -20,34 +14,39 @@ test-install: install
 	go get golang.org/x/tools/cmd/cover
 	go get github.com/cespare/prettybench
 
-dev-install: install test-install
+build-install:
+	go get github.com/mitchellh/gox
 
 test:
 	go test -cover ./...
 
-build-assets:
-	go-bindata -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
+bench:
+	go test -run=none -bench=. ./... | prettybench
 
-build-dev-assets:
+build:
 	go-bindata -debug -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
 
-_build:
 	go build \
 		-ldflags "-X main.progBuild=$(GIT_SHA)" \
 		-o $(GOPATH)/bin/data-models .
 
-build: build-assets _build
+dist-build:
+	mkdir -p dist
 
-build-dev: build-dev-assets _build
+	go-bindata -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
 
-bench:
-	go test -run=none -bench=. ./... | prettybench
+	gox -output "dist/{{.OS}}-{{.Arch}}/data-models-service" \
+		-ldflags "-X main.progBuild='$(GIT_SHA)'" \
+		-os "linux windows darwin" \
+		-arch "amd64" \
+		. > /dev/null
 
-fmt:
-	go vet ./...
-	go fmt ./...
+dist-zip:
+	cd dist && zip data-models-service-linux-amd64.zip linux-amd64/*
+	cd dist && zip data-models-service-windows-amd64.zip windows-amd64/*
+	cd dist && zip data-models-service-darwin-amd64.zip darwin-amd64/*
 
-lint:
-	golint ./...
+
+dist: dist-build dist-zip
 
 .PHONY: test
