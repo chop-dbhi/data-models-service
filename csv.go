@@ -8,6 +8,25 @@ import (
 	dms "github.com/chop-dbhi/data-models-service/client"
 )
 
+// UniversalReader wraps an io.Reader to replace carriage returns with newlines.
+// This is used with the csv.Reader so it can properly delimit lines.
+type UniversalReader struct {
+	r io.Reader
+}
+
+func (r *UniversalReader) Read(buf []byte) (int, error) {
+	n, err := r.r.Read(buf)
+
+	// Replace carriage returns with newlines
+	for i, b := range buf {
+		if b == '\r' {
+			buf[i] = '\n'
+		}
+	}
+
+	return n, err
+}
+
 type MapCSVReader struct {
 	fields []string
 
@@ -76,7 +95,7 @@ func (r *MapCSVReader) ReadAll() ([]dms.Attrs, error) {
 }
 
 func NewMapCSVReader(r io.Reader) *MapCSVReader {
-	cr := csv.NewReader(r)
+	cr := csv.NewReader(&UniversalReader{r})
 
 	cr.LazyQuotes = true
 	cr.TrimLeadingSpace = true
