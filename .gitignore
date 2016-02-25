@@ -2,3 +2,5 @@
 *~
 *.sw?
 bin
+dist
+data-models
