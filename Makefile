@@ -1,4 +1,8 @@
 GIT_SHA := $(shell git log -1 --pretty=format:"%h")
+# Get the first entry from GOPATH. This is an issue because the unusual
+# configuration on CircleCI ends up with multiple GOPATHs, but it shouldn't
+# be a problem elsewhere.
+ONEGOPATH := $(firstword $(subst :, ,$(GOPATH)))
 
 all: install
 
@@ -26,17 +30,19 @@ bench:
 build:
 	go-bindata -debug -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
 
+	# Pass GIT_SHA and BUILD_NUM so they can be included in the version.
 	go build \
-		-ldflags "-X main.progBuild=$(GIT_SHA)" \
-		-o $(GOPATH)/bin/data-models .
+		-ldflags "-X main.progBuild=$(GIT_SHA) -X main.progReleaseNum=$(BUILD_NUM)" \
+		-o $(ONEGOPATH)/bin/data-models .
 
 dist-build:
 	mkdir -p dist
 
 	go-bindata -ignore \\.sw[a-z] -ignore \\.DS_Store assets/
 
+	# Pass GIT_SHA and BUILD_NUM so they can be included in the version.
 	gox -output "dist/{{.OS}}-{{.Arch}}/data-models-service" \
-		-ldflags "-X main.progBuild='$(GIT_SHA)'" \
+		-ldflags "-X main.progBuild='$(GIT_SHA)' -X main.progReleaseNum=$(BUILD_NUM)" \
 		-os "linux windows darwin" \
 		-arch "amd64" \
 		. > /dev/null

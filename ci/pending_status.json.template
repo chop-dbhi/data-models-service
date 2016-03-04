@@ -1,0 +1,6 @@
+{
+    "state": "pending",
+    "target_url": "https://console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/dashboard?applicationName=<APP_NAME>&environmentId=<AWSID>",
+    "description": "Deploying to AWS for review...",
+    "context": "cd/awseb"
+}

@@ -20,6 +20,7 @@ var (
 	secret          string
 	googleAnalytics string
 	serviceName     string
+	printVersion    bool
 )
 
 func main() {
@@ -40,8 +41,15 @@ func main() {
 	flag.StringVar(&googleAnalytics, "ga", "", "Google Analytics tracking code.")
 	flag.Var(&registeredRepos, "repo", "Git repository to include. Multiple values can be supplied.")
 	flag.StringVar(&serviceName, "name", "Data Models Service", "Name of the service.")
+	flag.BoolVar(&printVersion, "version", false, "Print the application version.")
 
 	flag.Parse()
+
+	// Print program version and exit if `-version` flag is passed.
+	if printVersion {
+		fmt.Println(progVersion)
+		os.Exit(0)
+	}
 
 	if lvl, err := logrus.ParseLevel(loglevel); err != nil {
 		logrus.Fatalf("invalid log level")
