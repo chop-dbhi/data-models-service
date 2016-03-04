@@ -1,0 +1,79 @@
+machine:
+  services:
+    - docker
+  environment:
+    # Just the repo and org name in standard-ish variables.
+    APP_NAME: "${CIRCLE_PROJECT_REPONAME}"
+    ORG_NAME: "${CIRCLE_PROJECT_USERNAME}"
+    # Needed to create a specific version number (see ci/version.sh).
+    BUILD_NUM: "${CIRCLE_BUILD_NUM}"
+    COMMIT_SHA1: "${CIRCLE_SHA1}"
+    # For determining deployment behavior.
+    BRANCH: "${CIRCLE_BRANCH}"
+    # Images from the master branch are pushed to the latest tag on Docker Hub.
+    BRANCH_TAG: "${CIRCLE_BRANCH/master/latest}"
+    # Directories where CircleCI expects to find output.
+    ARTIFACT_DIR: "${CIRCLE_ARTIFACTS}"
+    TEST_OUTPUT_DIR: "${CIRCLE_TEST_REPORTS}"
+
+checkout:
+  post:
+    # Set git file mtimes to commit times so docker build recognizes cache.
+    - ./ci/git-set-file-times.pl
+
+dependencies:
+  cache_directories:
+    # Add a cache directory to save docker images to.
+    - "~/docker"
+    # Add a cache directory for the jq install.
+    - "~/bin"
+  override:
+    # Install jq for command line JSON parsing in deployment.
+    - mkdir -p ~/bin; if [[ ! -e ~/bin/jq ]]; then curl -L -o ~/bin/jq
+      http://stedolan.github.io/jq/download/linux64/jq &&
+      chmod 0755 ~/bin/jq; fi
+    # CircleCI checks out the source code into HOME/APP_NAME, which is not on
+    # the GOPATH, so we need to make a new GOPATH and create a link to the
+    # source code. See https://discuss.circleci.com/t/overriding-go-inference-in-the-dependencies-phase/660
+    - mkdir -p "$HOME/.go_project/src/github.com/${ORG_NAME}"
+    - mkdir -p "$HOME/.go_project/bin"
+    - ln -fs "$HOME/${APP_NAME}" "$HOME/.go_project/src/github.com/${ORG_NAME}/${APP_NAME}"
+    # Add the new GOPATH and GOPATH/bin to the relevant paths for future commands.
+    - |
+      echo 'export GOPATH=$HOME/.go_project:$GOPATH' >> ~/.circlerc
+      echo 'export PATH=$HOME/.go_project/bin:$PATH' >> ~/.circlerc
+    # Install dependencies and build the app (after moving to the new GOPATH
+    # compatible source code directory).
+    - cd "$HOME/.go_project/src/github.com/${ORG_NAME}/${APP_NAME}" && make test-install build
+    # Load dms docker image from previous build. This allows docker to use
+    # the cached layers of dms when building.
+    - if [[ -e ~/docker/dms.tar ]]; then docker load --input
+      ~/docker/dms.tar; fi
+    # Build new dms image, using cached layers from last image.
+    - docker build -t "dbhi/data-models-service:${BRANCH_TAG}" .
+    # Tag dms image with version number if final version.
+    - VERSION=$(data-models -version);
+      if [ ${#VERSION} -lt 6 ]; then
+      docker tag -f "dbhi/data-models-service:${BRANCH_TAG}"
+      "dbhi/data-models-service:${VERSION}"; fi
+    # Save new dms image to cache for next build.
+    - mkdir -p ~/docker; docker save dbhi/data-models-service >
+      ~/docker/dms.tar
+
+test:
+  override:
+    # Run tests after moving to the GOPATH compatible source directory.
+    # TODO:aaron0browne:Write tests.
+    - cd "$HOME/.go_project/src/github.com/${ORG_NAME}/${APP_NAME}" && make test
+    # Run the dms service locally.
+    - docker run -d -p "8123:8123" --name dms dbhi/data-models; sleep 10
+    # Integration testing of the running container service.
+    # TODO:aaron0browne:Write real integration tests.
+    - curl --retry 10 --retry-delay 5 -v http://localhost:8123
+
+deployment:
+  all:
+    branch: /.*/
+    commands:
+      # See below file for detailed notes on deployment.
+      - ./ci/deploy.sh

@@ -1,0 +1,6 @@
+{
+    "state": "success",
+    "target_url": "http://<AWS_ENV_NAME>.us-east-1.elasticbeanstalk.com",
+    "description": "Deployed to AWS for review!",
+    "context": "cd/awseb"
+}

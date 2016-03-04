@@ -1,6 +1,6 @@
 # Data Models Service
 
-[![GoDoc](https://godoc.org/github.com/chop-dbhi/data-models-service?status.svg)](https://godoc.org/github.com/chop-dbhi/data-models-service)
+[![GoDoc](https://godoc.org/github.com/chop-dbhi/data-models-service?status.svg)](https://godoc.org/github.com/chop-dbhi/data-models-service) [![Circle CI](https://circleci.com/gh/chop-dbhi/data-models-service.svg?style=svg)](https://circleci.com/gh/chop-dbhi/data-models-service)
 
 Service for consuming files in the [data models format](https://github.com/chop-dbhi/data-models). The service is publicly hosted here: http://data-models.origins.link
 
