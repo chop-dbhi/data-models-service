@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const DefaultServiceURL = "http://data-models.origins.link"
+const DefaultServiceURL = "http://data-models-service.research.chop.edu"
 
 // Set of URL templates for resources.
 var resourceURLs = map[string]string{
