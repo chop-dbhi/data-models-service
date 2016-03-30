@@ -229,7 +229,7 @@ func (c *Client) Schema(name, version string) (*Schema, error) {
 	return &schema, nil
 }
 
-// New initializes a new client to the
+// New initializes a new client.
 func New(service string) (*Client, error) {
 	if service == "" {
 		service = DefaultServiceURL
@@ -247,6 +247,20 @@ func New(service string) (*Client, error) {
 		Timeout: time.Second * 5,
 		url:     purl,
 		http: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				// No redirects.
+				if len(via) == 0 {
+					return nil
+				}
+
+				// Copy original request headers.
+				// See: https://github.com/golang/go/issues/4800
+				for key, val := range via[0].Header {
+					req.Header[key] = val
+				}
+
+				return nil
+			},
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
