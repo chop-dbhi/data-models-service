@@ -128,6 +128,7 @@ func (c *Client) Models() (*Models, error) {
 
 	var models *Models
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&models); err != nil {
 		return nil, fmt.Errorf("error decoding models")
 	}
@@ -156,7 +157,6 @@ func (c *Client) ModelRevisions(name string) (*Models, error) {
 	var models *Models
 
 	defer resp.Body.Close()
-
 	if err = json.NewDecoder(resp.Body).Decode(&models); err != nil {
 		return nil, fmt.Errorf("error decoding model revisions: %s", err)
 	}
@@ -185,6 +185,7 @@ func (c *Client) ModelRevision(name, version string) (*Model, error) {
 
 	var model Model
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&model); err != nil {
 		return nil, fmt.Errorf("error decoding model: %s", err)
 	}
@@ -213,6 +214,7 @@ func (c *Client) Schema(name, version string) (*Schema, error) {
 
 	var aux map[string]json.RawMessage
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&aux); err != nil {
 		return nil, fmt.Errorf("error decoding schema: %s", err)
 	}
