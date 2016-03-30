@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-const DefaultServiceURL = "http://data-models-service.research.chop.edu"
+const DefaultServiceURL = "https://data-models-service.research.chop.edu"
 
 // Set of URL templates for resources.
 var resourceURLs = map[string]string{
@@ -128,6 +129,7 @@ func (c *Client) Models() (*Models, error) {
 
 	var models *Models
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&models); err != nil {
 		return nil, fmt.Errorf("error decoding models")
 	}
@@ -156,7 +158,6 @@ func (c *Client) ModelRevisions(name string) (*Models, error) {
 	var models *Models
 
 	defer resp.Body.Close()
-
 	if err = json.NewDecoder(resp.Body).Decode(&models); err != nil {
 		return nil, fmt.Errorf("error decoding model revisions: %s", err)
 	}
@@ -185,6 +186,7 @@ func (c *Client) ModelRevision(name, version string) (*Model, error) {
 
 	var model Model
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&model); err != nil {
 		return nil, fmt.Errorf("error decoding model: %s", err)
 	}
@@ -213,6 +215,7 @@ func (c *Client) Schema(name, version string) (*Schema, error) {
 
 	var aux map[string]json.RawMessage
 
+	defer resp.Body.Close()
 	if err = json.NewDecoder(resp.Body).Decode(&aux); err != nil {
 		return nil, fmt.Errorf("error decoding schema: %s", err)
 	}
@@ -226,7 +229,7 @@ func (c *Client) Schema(name, version string) (*Schema, error) {
 	return &schema, nil
 }
 
-// New initializes a new client to the
+// New initializes a new client.
 func New(service string) (*Client, error) {
 	if service == "" {
 		service = DefaultServiceURL
@@ -243,7 +246,27 @@ func New(service string) (*Client, error) {
 		URL:     service,
 		Timeout: time.Second * 5,
 		url:     purl,
-		http:    &http.Client{},
+		http: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				// No redirects.
+				if len(via) == 0 {
+					return nil
+				}
+
+				// Copy original request headers.
+				// See: https://github.com/golang/go/issues/4800
+				for key, val := range via[0].Header {
+					req.Header[key] = val
+				}
+
+				return nil
+			},
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		},
 	}
 
 	return &c, nil
