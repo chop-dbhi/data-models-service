@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -245,7 +246,13 @@ func New(service string) (*Client, error) {
 		URL:     service,
 		Timeout: time.Second * 5,
 		url:     purl,
-		http:    &http.Client{},
+		http: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		},
 	}
 
 	return &c, nil
