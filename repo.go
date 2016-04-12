@@ -25,7 +25,13 @@ type Repos []*Repo
 
 // Repos is a string or repo that implement the flag.Value interface.
 func (r *Repos) String() string {
-	return defaultRepoName
+	toks := make([]string, len(*r))
+
+	for i, x := range *r {
+		toks[i] = x.String()
+	}
+
+	return strings.Join(toks, ",")
 }
 
 func (r *Repos) Set(s string) error {

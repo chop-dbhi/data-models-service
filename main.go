@@ -65,6 +65,11 @@ func main() {
 		logrus.Fatalf("could not create repos directory: %s", err)
 	}
 
+	if len(registeredRepos) == 0 {
+		repo, _ := ParseRepo(defaultRepoName)
+		registeredRepos = append(registeredRepos, repo)
+	}
+
 	// Setup routes.
 	router := httprouter.New()
 
