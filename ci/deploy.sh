@@ -40,7 +40,7 @@ DIRNAME="$( cd ${DIRNAME} && pwd )"
 cd "${DIRNAME}/../"
 
 # Get app version.
-VERSION="$(data-models -version)"
+VERSION="$(data-models-service -version)"
 
 echo "Pushing image to Docker Hub registry."
 docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
@@ -50,7 +50,7 @@ echo "Creating new Elastic Beanstalk version."
 if [ ${#VERSION} -lt 6 ]; then
     docker push "dbhi/${APP_NAME}:${VERSION}"
     DOCKERRUN_FILE="${VERSION}-Dockerrun.aws.json"
-    sed "s/<TAG>/${VERSION}/" -e "s/<APP_NAME>/${APP_NAME}/" \
+    sed -e "s/<TAG>/${VERSION}/" -e "s/<APP_NAME>/${APP_NAME}/" \
         < "${DIRNAME}/Dockerrun.aws.json.template" > \
         "${DOCKERRUN_FILE}"
 else

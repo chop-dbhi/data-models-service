@@ -50,9 +50,9 @@ dependencies:
     - if [[ -e ~/docker/dms.tar ]]; then docker load --input
       ~/docker/dms.tar; fi
     # Build new dms image, using cached layers from last image.
-    - docker build -t "dbhi/data-models-service:${BRANCH_TAG}" .
+    - cd "$HOME/.go_project/src/github.com/${ORG_NAME}/${APP_NAME}" && make build-install docker
     # Tag dms image with version number if final version.
-    - VERSION=$(data-models -version);
+    - VERSION=$(data-models-service -version);
       if [ ${#VERSION} -lt 6 ]; then
       docker tag -f "dbhi/data-models-service:${BRANCH_TAG}"
       "dbhi/data-models-service:${VERSION}"; fi
@@ -66,7 +66,7 @@ test:
     # TODO:aaron0browne:Write tests.
     - cd "$HOME/.go_project/src/github.com/${ORG_NAME}/${APP_NAME}" && make test
     # Run the dms service locally.
-    - docker run -d -p "8123:8123" --name dms dbhi/data-models; sleep 10
+    - docker run -d -p "8123:8123" --net=host "dbhi/data-models-service:${BRANCH_TAG}"; sleep 10
     # Integration testing of the running container service.
     # TODO:aaron0browne:Write real integration tests.
     - curl --retry 10 --retry-delay 5 -v http://localhost:8123
