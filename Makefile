@@ -3,6 +3,12 @@ GIT_SHA := $(shell git log -1 --pretty=format:"%h")
 # configuration on CircleCI ends up with multiple GOPATHs, but it shouldn't
 # be a problem elsewhere.
 ONEGOPATH := $(firstword $(subst :, ,$(GOPATH)))
+# Use a branch tag when building the docker image, if defined.
+ifdef BRANCH_TAG
+	DOCKERTAG := dbhi/data-models-service:$(BRANCH_TAG)
+else
+	DOCKERTAG := dbhi/data-models-service
+endif
 
 all: install
 
@@ -33,7 +39,7 @@ build:
 	# Pass GIT_SHA and BUILD_NUM so they can be included in the version.
 	go build \
 		-ldflags "-X main.progBuild=$(GIT_SHA) -X main.progReleaseNum=$(BUILD_NUM)" \
-		-o $(ONEGOPATH)/bin/data-models .
+		-o $(ONEGOPATH)/bin/data-models-service .
 
 dist-build:
 	mkdir -p dist
@@ -42,7 +48,7 @@ dist-build:
 
 	# Pass GIT_SHA and BUILD_NUM so they can be included in the version.
 	gox -output "dist/{{.OS}}-{{.Arch}}/data-models-service" \
-		-ldflags "-X main.progBuild='$(GIT_SHA)' -X main.progReleaseNum=$(BUILD_NUM)" \
+		-ldflags "-X main.progBuild=$(GIT_SHA) -X main.progReleaseNum=$(BUILD_NUM)" \
 		-os "linux windows darwin" \
 		-arch "amd64" \
 		. > /dev/null
@@ -52,7 +58,11 @@ dist-zip:
 	cd dist && zip data-models-service-windows-amd64.zip windows-amd64/*
 	cd dist && zip data-models-service-darwin-amd64.zip darwin-amd64/*
 
-
 dist: dist-build dist-zip
+
+docker: dist
+	cp Dockerfile dist/linux-amd64/
+	docker build -t $(DOCKERTAG) dist/linux-amd64
+	rm dist/linux-amd64/Dockerfile
 
 .PHONY: test
