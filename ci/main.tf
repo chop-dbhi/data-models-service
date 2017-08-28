@@ -25,6 +25,14 @@ data "aws_ami" "ecs" {
   }
 }
 
+data "template_file" "init" {
+  template = "${file("init.sh")}"
+
+  vars {
+    tag = "${var.image_tag}"
+  }
+}
+
 resource "aws_instance" "default" {
   subnet_id              = "${data.terraform_remote_state.vpc.development_sandbox_vpc.public_subnets[0]}"
   vpc_security_group_ids = ["${aws_security_group.ssh_access.id}", "${aws_security_group.internal.id}"]
@@ -32,7 +40,7 @@ resource "aws_instance" "default" {
   instance_type          = "${var.instance_type}"
   monitoring             = "true"
   key_name               = "${var.ssh_key_name}"
-  user_data              = "${file("init.sh")}"
+  user_data              = "${data.template_file.init.rendered}"
 
   tags {
     Name      = "${var.workgroup}-${var.project}"

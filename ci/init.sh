@@ -4,5 +4,5 @@
 stop ecs || true && mv /etc/init/ecs.conf /etc/init/ecs.conf.disabled
 
 # Pull and run the service.
-docker pull dbhi/data-models-service:latest
-docker run -d -p "80:8123" dbhi/data-models-service
+docker pull dbhi/data-models-service:${tag}
+docker run -d -p "80:8123" dbhi/data-models-service:${tag}
