@@ -199,32 +199,57 @@ func (r *Repo) update() bool {
 }
 
 func ParseRepo(uri string) (*Repo, error) {
-	toks := strings.SplitN(uri, "@", 2)
-
 	r := &Repo{
 		Branch: "master",
 	}
 
+	ssh := strings.HasPrefix(uri, "git@")
+	if ssh {
+		uri = uri[4:]
+	}
+
+	toks := strings.SplitN(uri, "@", 2)
 	uri = toks[0]
 
-	// A remote URL must be absolute.
-	if purl, err := url.ParseRequestURI(uri); err == nil {
-		r.URL = uri
+	if ssh {
+		purl, err := url.Parse("git://" + strings.Replace(uri, ":", "/", -1))
+		if err != nil {
+			return nil, err
+		}
+		r.URL = "git@" + uri
 		r.git = true
+
+		if strings.HasSuffix(purl.Path, ".git") {
+			purl.Path = purl.Path[:len(purl.Path)-4]
+		}
 
 		// Go-style namespacing e.g. github.com/chop-dbhi/data-models
 		r.path = filepath.Join(reposDir, purl.Host, purl.Path)
-	} else if uri, err = filepath.Abs(uri); err == nil {
-		gitDir := filepath.Join(uri, ".git")
 
-		if _, err = os.Stat(gitDir); err == nil {
-			r.git = true
+		// A remote URL must be absolute.
+	} else {
+		if strings.HasSuffix(uri, ".git") {
+			uri = uri[:len(uri)-4]
 		}
 
-		r.URL = uri
-		r.path = uri
-	} else {
-		return nil, ErrInvalidRepo
+		if purl, err := url.ParseRequestURI(uri); err == nil {
+			r.URL = uri
+			r.git = true
+
+			// Go-style namespacing e.g. github.com/chop-dbhi/data-models
+			r.path = filepath.Join(reposDir, purl.Host, purl.Path)
+		} else if uri, err = filepath.Abs(uri); err == nil {
+			gitDir := filepath.Join(uri, ".git")
+
+			if _, err = os.Stat(gitDir); err == nil {
+				r.git = true
+			}
+
+			r.URL = uri
+			r.path = uri
+		} else {
+			return nil, ErrInvalidRepo
+		}
 	}
 
 	if len(toks) > 1 {
