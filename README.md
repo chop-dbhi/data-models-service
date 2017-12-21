@@ -32,13 +32,13 @@ data-models -help
 Use the pre-built image on Docker Hub.
 
 ```bash
-docker run -it -p 8123:8123 dbhi/data-models
+docker run -it -p 8123:8123 dbhi/data-models-service
 ```
 
 Or build the image locally.
 
 ```bash
-docker build -t dbhi/data-models .
+docker build -t dbhi/data-models-service .
 ```
 
 ### Top-level Resources
